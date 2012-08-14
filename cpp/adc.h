@@ -9,6 +9,8 @@ class adc
 		int add[12],sub[12];
 		int ea[12],eb[12];
 		int ebal[2];
+		int enableThreshCal;
+		double threshErr[12],ethresh[12];
 		const static double refp=0.9;
 		const static double refm=0.0;
 	public:
@@ -21,6 +23,8 @@ class adc
 		void autoCapCalib();
 		void autoIndCapCalibDither(int cap,int type);
 		void printCoe();
+		int threshEst(int bitPos);
+		void setThreshCal(int enable);
 		void setCoe(int type,int pos,int val);
 		~adc();
 };

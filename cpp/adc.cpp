@@ -18,7 +18,11 @@ adc::adc()
 	{
 		errp[iter]/=2048.0;
 		errm[iter]/=2048.0;
+		threshErr[iter]=0;
+		ethresh[iter]=0;
 	}
+	enableThreshCal=0;
+	threshErr[0]=(refp-refm)/16;
 	cdacM=new cdac();
 	cdacP=new cdac(12,errp);
 }
@@ -68,6 +72,8 @@ int adc::convert()
 	int capPosition=0;
 	double vthresh=0.0;
 	int code=0;
+	//ofstream cnvfile("cnvinfo.dat",ios::out);
+
 	for(iter=0;iter<11;iter++)
 	{
 		if(iter<5)
@@ -91,7 +97,8 @@ int adc::convert()
 
 	for(iter=0;iter<12;iter++)
 	{
-		vthresh=(refp-refm)/double(pow(2,iter+2));
+		vthresh=(refp-refm)/double(pow(2,iter+2))+threshErr[iter]-ethresh[iter]*(refp-refm)/(2048.0*16);
+		//cnvfile<<ainp-ainm<<endl;
 		//cout<<ainp<<"\t\t\t"<<ainm<<"\t\t\t"<<ainp-ainm<<endl;
 		if(ainp-ainm>vthresh)
 		{
@@ -150,8 +157,15 @@ int adc::convert()
 	}
 	code+=pow(2,12);
 	code/=2;
-
 	code+=errCo/4;
+
+	int idealDec;
+	idealDec=code>(2048+512)?1:0;
+	if(add[0]!=idealDec && enableThreshCal==1)
+	{
+		ethresh[0]+=(code-(2048+512));	
+		cout<<code<<endl;
+	}
 	return code;
 }
 
@@ -242,7 +256,7 @@ int adc::calibConvert(int bitUnderCal,int config)
 	//cdacM->printBotstat();
 	for(iter=5;iter<12;iter++)
 	{
-		vthresh=(refp-refm)/double(pow(2,iter+2));
+		vthresh=(refp-refm)/double(pow(2,iter+2))+threshErr[iter];
 		//cout<<ainp<<"\t\t\t"<<ainm<<"\t\t\t"<<ainp-ainm<<endl;
 		if(ainp-ainm>vthresh)
 		{
@@ -396,6 +410,16 @@ void adc::autoIndCapCalibDither(int cap,int type)
 			eb[cap]=errAcc+e2;
 		}
 	}
+}
+
+int adc::threshEst(int bitPos)
+{
+	return ethresh[bitPos];
+}
+
+void adc::setThreshCal(int enable)
+{
+	enableThreshCal=enable;
 }
 
 adc::~adc()
