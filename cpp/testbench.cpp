@@ -27,6 +27,10 @@ int main()
 		resOut<<residue<<endl;
 	}
 	//linTest->computeLin("data1.dat");
+	//iAdc->autoIndCapCalibDither(5,1);
+	//iAdc->autoIndCapCalibDither(5,0);
+	//iAdc->autoIndCapCalibDither(4,0);
+	//iAdc->autoIndCapCalibDither(4,1);
 	iAdc->autoCapCalib();
 	for(input=-0.8;input<0.8;input+=0.0001)
 	{
